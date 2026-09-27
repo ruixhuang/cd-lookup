@@ -35,6 +35,15 @@ This scans the share (a couple of minutes over SMB), rewrites `docs/index.json`
 only if the folder list changed, commits, and pushes. GitHub Pages redeploys
 within a minute or so.
 
+If `git push` is refused with `Permission ... denied to <other-account>`, the macOS
+keychain is answering for a different GitHub account. Make this repo use the GitHub
+CLI's login instead (already done in this checkout):
+
+```sh
+git config --replace-all credential.helper ''
+git config --add credential.helper '!gh auth git-credential'
+```
+
 ## Local preview
 
 ```sh
