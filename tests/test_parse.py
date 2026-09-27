@@ -52,6 +52,14 @@ class ParseNameTests(unittest.TestCase):
         self.check("Ahmad Jamal - Chicago Revisited - Live At Joe Segal's Jazz Showcase",
                    "Ahmad Jamal", "Chicago Revisited - Live At Joe Segal's Jazz Showcase")
 
+    def test_mojibake_is_repaired(self):
+        self.check("AndrÃ¡s Schiff - Goldberg Variations", "András Schiff", "Goldberg Variations")
+        self.check("Arvo PÃ¤rt - Tabula Rasa", "Arvo Pärt", "Tabula Rasa")
+        # macOS hands back decomposed (NFD) names; the repair must still work.
+        import unicodedata
+        nfd = unicodedata.normalize("NFD", "AndrÃ¡s Schiff - Goldberg Variations")
+        self.check(nfd, "András Schiff", "Goldberg Variations")
+
     def test_hyphen_without_spaces_is_not_a_separator(self):
         self.check("AC-DC - Back In Black", "AC-DC", "Back In Black")
 

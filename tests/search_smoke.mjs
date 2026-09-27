@@ -19,12 +19,12 @@ const { normalize, editDistance, search, setItems } = ctx.__cdlookup;
 
 const indexPath = new URL('../docs/index.json', import.meta.url);
 const sample = [
-  { g: 'Rock, Pop, Blues, Soul', a: 'Adrian Belew', t: 'Inner Revolution', y: null, c: null, p: 'x', n: 'x', parent: null },
-  { g: 'Rock, Pop, Blues, Soul', a: '', t: 'Tower Of Song; The Songs Of Leonard Cohen', y: null, c: null, p: 'x', n: 'x', parent: null },
-  { g: 'Chinese', a: '崔健', t: '红旗下的蛋', y: null, c: null, p: 'x', n: 'x', parent: null },
-  { g: 'ECM Records', a: 'Chick Corea & Dave Holland & Barry Altschul', t: 'A.R.C', y: 1971, c: 'ECM 1009', p: 'x', n: 'x', parent: null },
-  { g: 'Country', a: 'Johnny Cash', t: 'Ride This Train', y: 1962, c: null, p: 'x', n: 'x', parent: 'Johnny Cash - Complete Columbia' },
-  { g: 'Jazz', a: 'Béla Fleck', t: 'Perpetual Motion', y: null, c: null, p: 'x', n: 'x', parent: null },
+  { g: 'Rock, Pop, Blues, Soul', a: 'Adrian Belew', t: 'Inner Revolution', y: null, c: null, p: 'x', parent: null },
+  { g: 'Rock, Pop, Blues, Soul', a: '', t: 'Tower Of Song; The Songs Of Leonard Cohen', y: null, c: null, p: 'x', parent: null },
+  { g: 'Chinese', a: '崔健', t: '红旗下的蛋', y: null, c: null, p: 'x', parent: null },
+  { g: 'ECM Records', a: 'Chick Corea & Dave Holland & Barry Altschul', t: 'A.R.C', y: 1971, c: 'ECM 1009', p: 'x', parent: null },
+  { g: 'Country', a: 'Johnny Cash', t: 'Ride This Train', y: 1962, c: null, p: 'x', parent: 'Johnny Cash - Complete Columbia' },
+  { g: 'Jazz', a: 'André Previn', t: 'King Size', y: null, c: null, p: 'x', parent: null },
 ];
 const items = existsSync(indexPath) ? JSON.parse(readFileSync(indexPath, 'utf8')).items : sample;
 setItems(items.map((it) => {
@@ -43,7 +43,7 @@ const has = (res, pred) => res.rows.some(pred);
 
 expect('editDistance transposition', editDistance('adrain', 'adrian', 1) === 1);
 expect('editDistance bound', editDistance('abcdef', 'xyz', 1) === 2);
-expect('normalize strips accents', normalize('Béla Fleck') === 'bela fleck');
+expect('normalize strips accents', normalize('André Previn') === 'andre previn');
 
 let r = hits('adrain belew');
 expect('typo "adrain belew" finds Adrian Belew', has(r, (i) => i.a === 'Adrian Belew'), `${r.total} matches`);
@@ -55,8 +55,10 @@ r = hits('ECM 1009');
 expect('"ECM 1009" finds the catalog entry', has(r, (i) => i.c === 'ECM 1009'), `${r.total} matches`);
 r = hits('cash 1962');
 expect('"cash 1962" finds a box-set child', has(r, (i) => i.parent && /Cash/.test(i.a)), `${r.total} matches`);
-r = hits('bela');
-expect('"bela" matches accented Béla', has(r, (i) => /B[ée]la/.test(i.a)), `${r.total} matches`);
+r = hits('andre previn');
+expect('"andre previn" matches accented André', has(r, (i) => /Andr[ée] Previn/.test(i.a)), `${r.total} matches`);
+r = hits('andras schiff');
+expect('"andras schiff" matches repaired mojibake name', has(r, (i) => /Andr[áa]s Schiff/.test(i.a)) || !items.some((i) => /Schiff/.test(i.a)), `${r.total} matches`);
 r = hits('cash', 'Jazz');
 expect('genre filter excludes other genres', r.rows.every((i) => i.g === 'Jazz'), `${r.total} matches`);
 r = hits('');

@@ -1,5 +1,7 @@
 # CD/LP Lookup
 
+Live site: **https://ruixhuang.github.io/cd-lookup/**
+
 A static search page for the album folders on the music share
 (`/Volumes/ServerFolders/Music Rip`). A Python script builds a JSON index of the
 folder names; the page searches that index in the browser. There is no server and
@@ -19,6 +21,7 @@ machine or user details are exposed.
 | `docs/index.html` | The search page. Vanilla HTML/CSS/JS, fuzzy and substring matching. |
 | `docs/index.json` | Generated index. Committed so Pages can serve it. |
 | `tests/test_parse.py` | Tests for the folder-name parser. |
+| `tests/search_smoke.mjs` | Headless Node check of the page's search logic. |
 
 ## Refresh the index
 
@@ -43,15 +46,20 @@ open http://localhost:8000
 ## Tests
 
 ```sh
-python3 -m unittest
+python3 -m unittest              # folder-name parser
+node tests/search_smoke.mjs      # search logic in docs/index.html (uses docs/index.json if present)
 ```
 
-## One-time GitHub Pages setup
+## GitHub Pages setup (already done)
 
-1. Create a public repository (free Pages needs a public repo), e.g. `cd-lookup`.
-2. `git remote add origin git@github.com:<user>/cd-lookup.git && git push -u origin main`
-3. Repository Settings > Pages > Source: **Deploy from a branch**, branch `main`, folder `/docs`.
-4. The site appears at `https://<user>.github.io/cd-lookup/`.
+The repo `ruixhuang/cd-lookup` is public (free Pages needs a public repo) and Pages is
+configured as **Deploy from a branch**, branch `main`, folder `/docs`. To recreate it
+elsewhere:
+
+```sh
+gh repo create <user>/cd-lookup --public --source=. --remote=origin --push
+gh api -X POST repos/<user>/cd-lookup/pages -f 'source[branch]=main' -f 'source[path]=/docs'
+```
 
 ## Folder-name rules the parser understands
 

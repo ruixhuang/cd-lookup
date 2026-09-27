@@ -10,6 +10,7 @@ import os
 import re
 import sys
 import time
+import unicodedata
 from datetime import datetime, timezone
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -27,6 +28,24 @@ RE_FILE_EXT = re.compile(
     r"jpe?g|png|gif|bmp|tiff?|webp|pdf|db|ini|url|torrent|zip|rar|7z)$", re.I)
 
 
+RE_MOJIBAKE = re.compile(r"[\u00c2\u00c3][\u0080-\u00bf]")
+
+
+def fix_mojibake(s):
+    """Repair UTF-8 text that was mis-decoded as Latin-1 ("AndrÃ¡s" -> "András").
+
+    macOS stores names in decomposed form (NFD), so compose first or the
+    tell-tale "Ã" is invisible to the regex.
+    """
+    s = unicodedata.normalize("NFC", s)
+    if not RE_MOJIBAKE.search(s):
+        return s
+    try:
+        return s.encode("latin-1").decode("utf-8")
+    except (UnicodeEncodeError, UnicodeDecodeError):
+        return s
+
+
 def parse_name(name):
     """Split a folder name into artist / title / year / catalog.
 
@@ -38,7 +57,7 @@ def parse_name(name):
       5. split on the first " - "
       6. a year right after the artist ("Artist - 1962 - Title")
     """
-    rest = name.strip()
+    rest = fix_mojibake(name).strip()
     catalog = year = None
 
     m = RE_CATALOG.match(rest)
@@ -106,7 +125,6 @@ def make_item(genre, name, relpath, parent=None):
         "y": p["year"],
         "c": p["catalog"],
         "p": relpath,
-        "n": name,
         "parent": parent,
     }
 
