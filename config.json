@@ -1,0 +1,9 @@
+{
+  "root": "/Volumes/ServerFolders/Music Rip",
+  "output": "docs/index.json",
+  "exclude": ["aaa_test", "test_in"],
+  "child_skip_patterns": [
+    "^(cd|disc|disk|side|vol|volume)\\s*[0-9ivx]*$",
+    "^(scans?|artwork|covers?|art|booklet|images?|extras?)$"
+  ]
+}
